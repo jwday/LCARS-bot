@@ -1,4 +1,4 @@
-index.json
+index.js
 myconfig.json
 /node_modules/*
 *.wav
