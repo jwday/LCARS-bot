@@ -1,0 +1,4 @@
+/sounds/*
+/node_modules/*
+*.wav
+*.mp3
