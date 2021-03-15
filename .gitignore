@@ -1,5 +1,6 @@
-/sounds/*
+myconfig.json
 /node_modules/*
 *.wav
+*.WAV
 *.mp3
-myconfig.json
+*.ogg
