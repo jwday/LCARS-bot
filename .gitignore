@@ -5,3 +5,5 @@ myconfig.json
 *.WAV
 *.mp3
 *.ogg
+/commands/smoke.js
+*.code-workspace

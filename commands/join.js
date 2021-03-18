@@ -1,31 +1,60 @@
-const fs = require("fs");
-const joinSounds = './sounds/join_voice/';
-
 module.exports = {
 	name: 'join',
-	description: 'Join a voice channel.',
-	async execute(message, connection, args) {
-		if(connection) {
+	description: 'Make LCARS join a voice channel.',
+	syntax: '!join [-v XX | -vol XX] [-r | -rand]',
+	arguments: {'-v': 'Volume (0-10)', '-r': 'Randomize voice'},
+	voiceReq: true,
+	async execute(message, client, argsString) {
+		var connection = client.voice.connections.get(message.guild.id);
+		if (connection) {
 			// Do nothing
 		} else {
-			var connection = await message.member.voice.channel.join()
-			if (!args.length) {
-				connection.play(joinSounds + "gbl.hi_bot.wav", { volume: 0.5 });
-			} else if (args[0] === 'rand') {
-				var soundFiles = fs.readdirSync(joinSounds, (err, files) => {
-					files.forEach(file => {
-						soundFiles.push(file);
-					});
-				});
-				
-				var randSound = soundFiles[Math.floor(Math.random() * soundFiles.length)];
-				connection.play(joinSounds + randSound, { volume: 0.5 });
-			} else {
-				connection = '';
-				message.channel.send('Argument not recognized');
-			}
-		}
+			connection = await message.member.voice.channel.join();
 
-		return connection;
+			var vol = 5;
+			var snd = "gbl.hi_bot.wav";
+			const soundsDir = './sounds/join_voice/';
+
+			const args = argsString.split('-').slice(1);
+
+			if (args.length) {
+				args.forEach(arg => {
+					arg = Array.from(arg.trim().split(' ')); // Multi-input arguments are split into array elements for easy access
+					
+					// Check the first element of the arg array to see what the argument is
+					if (arg[0] == 'r' || arg[0] == 'rand') {
+						var soundFiles = fs.readdirSync(soundsDir, (err, files) => {
+							files.forEach(file => {
+								soundFiles.push(file);
+							});
+						});
+						snd = soundFiles[Math.floor(Math.random() * soundFiles.length)];
+						
+					} else if (arg[0] == 'v' || arg[0] == 'vol') {
+						// Some arguments may have additional parameters which will be stored as further array elements
+						volCheck = parseFloat(arg[1]);
+						if (isNaN(volCheck)) {
+							message.channel.send('The volume option requires a valid number to be supplied.');
+						} else if (volCheck < 0 || volCheck > 10) {
+							message.channel.send('The volume option requires a value between 0 and 10.');
+						} else {
+							vol = volCheck;
+						}
+
+					} else {
+						message.channel.send(`Argument -${arg[0]} is invalid.`);
+					}
+				});
+
+			} else {
+				// Default behavior
+			}
+
+			dispatcher = connection.play(soundsDir + snd, { volume: vol/10 });
+			dispatcher.on("finish", () => {
+				dispatcher.destroy();
+			})
+			dispatcher.on("error", error => console.error(error));
+		}
 	},
 };

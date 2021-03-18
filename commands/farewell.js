@@ -1,8 +1,8 @@
 module.exports = {
-	name: 'yardsale',
-	description: 'Throw a yard sale.',
-	syntax: '!yardsale [-v XX | -vol XX] [-c | -chat]',
-	arguments: {'-v': 'Volume (0-10)', '-c': 'Display in chat'},
+	name: 'farewell',
+	description: 'Make LCARS bid farewell.',
+	syntax: '!farewell [-v XX | -vol XX] [-r | -rand] [-c | -chat]',
+	arguments: {'-v': 'Volume (0-10)', '-r': 'Randomize voice', '-c': 'Display in chat'},
 	voiceReq: true,
 	async execute(message, client, argsString) {
 		var connection = client.voice.connections.get(message.guild.id);
@@ -13,17 +13,30 @@ module.exports = {
 		}
 
 		var vol = 5;
-		var snd = "yardsale.WAV";
-		const soundsDir = './sounds/';
+		var snd = "gbl.bye_bot.wav";
+		const soundsDir = './sounds/leave_voice/';
 
-		const args = argsString.split('-').slice(1);
+		var args = '';
+		try {
+			args = argsString.split('-').slice(1);
+		} catch {
+
+		}
 
 		if (args.length) {
 			args.forEach(arg => {
 				arg = Array.from(arg.trim().split(' ')); // Multi-input arguments are split into array elements for easy access
 				
 				// Check the first element of the arg array to see what the argument is
-				if (arg[0] == 'v' || arg[0] == 'vol') {
+				if (arg[0] == 'r' || arg[0] == 'rand') {
+					var soundFiles = fs.readdirSync(soundsDir, (err, files) => {
+						files.forEach(file => {
+							soundFiles.push(file);
+						});
+					});
+					snd = soundFiles[Math.floor(Math.random() * soundFiles.length)];
+
+				} else if (arg[0] == 'v' || arg[0] == 'vol') {
 					// Some arguments may have additional parameters which will be stored as further array elements
 					volCheck = parseFloat(arg[1]);
 					if (isNaN(volCheck)) {
@@ -35,7 +48,7 @@ module.exports = {
 					}
 
 				} else if (arg[0] == 'c' || arg[0] == 'chat') {
-					message.channel.send(':triangular_flag_on_post: :triangular_flag_on_post:  **YARD SALE**  :triangular_flag_on_post:  :triangular_flag_on_post: ');
+					message.channel.send(':wave: Bye.');
 					
 				} else {
 					message.channel.send(`Argument -${arg[0]} is invalid.`);
