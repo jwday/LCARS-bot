@@ -5,17 +5,18 @@ module.exports = {
 	description: 'List all available commands or get help for a specific set of commands.',
 	syntax: '!help [Command1 Command2 ...]',
 	arguments: {'Command': 'The specific command you want more info on.'},
+	cooldown: 20,
 	voiceReq: false,
 	async execute(message, client, argsString) {
 		const args = argsString.split(' ');
 
 		if (args[0] === '') {
 			const newEmbed = new Discord.MessageEmbed()
+			newEmbed.addField('Use `!help [command]` to get more information on a specific command(s).', 'Ex. `!help yardsale`, `!help yardsale rockout`.', false);
 			client.commands.forEach(element => {
 				// console.log(`${element.name}: ${element.description}`);
 				newEmbed.addField(`!${element.name}`, `${element.description}`, false);
 			});
-			newEmbed.addField('Use `!help [command]` to get more information on a specific command(s).', 'Ex. `!help yardsale`, `!help yardsale rockout`.', false);
 			message.channel.send(newEmbed);
 
 		} else {

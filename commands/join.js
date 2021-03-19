@@ -1,3 +1,5 @@
+const fs = require(`fs`);
+
 module.exports = {
 	name: 'join',
 	description: 'Make LCARS join a voice channel.',

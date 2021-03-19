@@ -1,8 +1,11 @@
+const fs = require(`fs`);
+
 module.exports = {
 	name: 'shazbot',
 	description: 'Let out a big ugly shazbot.',
 	syntax: '!shazbot [-v XX | -vol XX] [-r | -rand] [-c | -chat]',
 	arguments: {'-v': 'Volume (0-10)', '-r': 'Randomize voice', '-c': 'Display in chat'},
+	cooldown: 3,
 	voiceReq: true,
 	async execute(message, client, argsString) {
 		var connection = client.voice.connections.get(message.guild.id);

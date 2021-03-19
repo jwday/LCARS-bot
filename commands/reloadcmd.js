@@ -3,7 +3,10 @@ const fs = require("fs");
 module.exports = {
 	name: 'reloadcmd',
 	description: 'Reload all the commands (for debugging purposes).',
-	async execute(message, client, args) {
+	syntax: '!reloadcmd',
+	arguments: 'None',
+	voiceReq: false,
+	async execute(message, client, argsString) {
 		const commandsDir = `${__dirname}`;
 		const commandFiles = fs.readdirSync(commandsDir).filter(file => file.endsWith(".js"));
 		for (const file of commandFiles) {

@@ -6,6 +6,8 @@
     "ffmpeg": "^0.0.4",
     "ffmpeg-static": "^4.2.7",
     "fluent-ffmpeg": "^2.1.2",
+    "google": "^2.1.0",
+    "google-it": "^1.6.2",
     "node-opus": "^0.3.3",
     "opusscript": "^0.0.8",
     "simple-youtube-api": "^5.2.1",

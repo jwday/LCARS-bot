@@ -3,6 +3,7 @@ module.exports = {
 	description: 'Rock out with your bot out.',
 	syntax: '!rockout [-v XX | -vol XX] [-c | -chat]',
 	arguments: {'-v': 'Volume (0-10)', '-c': 'Display in chat'},
+	cooldown: 10,
 	voiceReq: true,
 	async execute(message, client, argsString) {
 		var connection = client.voice.connections.get(message.guild.id);

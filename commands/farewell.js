@@ -1,8 +1,11 @@
+const fs = require(`fs`);
+
 module.exports = {
 	name: 'farewell',
 	description: 'Make LCARS bid farewell.',
 	syntax: '!farewell [-v XX | -vol XX] [-r | -rand] [-c | -chat]',
 	arguments: {'-v': 'Volume (0-10)', '-r': 'Randomize voice', '-c': 'Display in chat'},
+	cooldown: 5,
 	voiceReq: true,
 	async execute(message, client, argsString) {
 		var connection = client.voice.connections.get(message.guild.id);

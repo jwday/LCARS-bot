@@ -7,17 +7,20 @@ const commandsDir = `${__dirname}/commands`;
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
+client.cooldowns = new Discord.Collection();
+client.soundboards = new Discord.Collection();
+const { cooldowns } = client;
 
 var guild_and_channel_ids = {'The Crew': ['#music-callouts', '718907750645760030'],
-							 'LCARS Test Server': ['#general', '820583136928727041'],
-							 'D&D': ['#general', '813245474605760523']};
+'LCARS Test Server': ['#general', '820583136928727041'],
+'D&D': ['#general', '813245474605760523']};
 
 // Build and set all bot commands by looping through all the command files in the commands directory
 function setCommands() {
 	const commandFiles = fs.readdirSync(commandsDir).filter(file => file.endsWith(".js"));
 	for (const file of commandFiles) {
 		const command = require(`${commandsDir}/${file}`);
-
+		
 		// set a new item in the Collection
 		// with the key as the command name and the value as the exported module
 		client.commands.set(command.name, command);
@@ -41,12 +44,12 @@ client.on('message', async (message) => {
 		var allowedChannel = guild_and_channel_ids[message.guild.name][0];
 		return message.channel.send(`LCARS requires user to issue commands from **${allowedChannel}**`);
 	}
-
+	
 	// Parse the full command and separate out the arguments
 	const fullCommand = message.content.slice(prefix.length).trim()
 	const command = fullCommand.split(' ')[0].toLowerCase();
 	const argsString = fullCommand.split(' ').slice(1).join(' ');
-
+	
 	// Check if it's a valid command
 	if (!client.commands.has(command)) {
 		message.delete();
@@ -58,6 +61,36 @@ client.on('message', async (message) => {
 			return message.channel.send('LCARS requires user to be in a voice channel to play sounds.');
 		}
 	}
+	
+	// Track cooldowns
+	const cmdObject = client.commands.get(command);
+	
+	if (!cooldowns.has(cmdObject.name)) {
+		cooldowns.set(cmdObject.name, new Discord.Collection());
+	}
+	// console.log(cooldowns)
+	
+	const now = Date.now();
+	const timestamps = cooldowns.get(cmdObject.name);
+	const cooldownAmount = (cmdObject.cooldown || 1) * 1000;
+	
+	if (timestamps.has(message.author.id)) {
+		const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+		
+		if (now < expirationTime) {
+			await message.delete();
+			const timeLeft = (expirationTime - now) / 1000;
+			let msg = await message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${cmdObject.name}\` command.`);
+
+			setTimeout(() => msg.delete(), cooldownAmount);
+			return setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+		}
+	} else {
+		timestamps.set(message.author.id, now);
+		setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+		// console.log(timestamps);
+	}
+
 	
 	// Execute the command
 	try {
@@ -75,26 +108,26 @@ client.on('message', async (message) => {
 	message.delete();
 });
 
-
-client.on('voiceStateUpdate', async (oldState, newState) => {
-	let newChannel = newState.channelID;
-	let oldChannel = oldState.channelID;
-	// console.log(oldState.guild.id);
+// Auto-greet on channel join
+// client.on('voiceStateUpdate', async (oldState, newState) => {
+// 	let newChannel = newState.channelID;
+// 	let oldChannel = oldState.channelID;
+// 	// console.log(oldState.guild.id);
 
 	
-	if (!oldState.member.user.bot && client.voice.connections.get(oldState.guild.id)) { // check if the bot is the one joining/leaving
-		const message = {guild: {id: oldState.guild.id}, member: {voice: ''}};
-		const argsString = '';
+// 	if (!oldState.member.user.bot && client.voice.connections.get(oldState.guild.id)) { // check if the bot is the one joining/leaving
+// 		const message = {guild: {id: oldState.guild.id}, member: {voice: ''}};
+// 		const argsString = '';
 	
-		if (oldChannel === null && newChannel !== null) {
-			await new Promise(r => setTimeout(r, 750)); // Sleep?
-			await doCommand('greet', message, client, argsString);
-		} else if (newChannel === null) {
-			await new Promise(r => setTimeout(r, 500)); // Sleep?
-			await doCommand('farewell', message, client, argsString);
-		}
-	}
-})
+// 		if (oldChannel === null && newChannel !== null) {
+// 			await new Promise(r => setTimeout(r, 750)); // Sleep?
+// 			await doCommand('greet', message, client, argsString);
+// 		} else if (newChannel === null) {
+// 			await new Promise(r => setTimeout(r, 500)); // Sleep?
+// 			await doCommand('farewell', message, client, argsString);
+// 		}
+// 	}
+// })
 
 client.login(token);
 setCommands();

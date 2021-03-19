@@ -3,6 +3,7 @@ module.exports = {
 	description: 'Throw a yard sale.',
 	syntax: '!yardsale [-v XX | -vol XX] [-c | -chat]',
 	arguments: {'-v': 'Volume (0-10)', '-c': 'Display in chat'},
+	cooldown: 3,
 	voiceReq: true,
 	async execute(message, client, argsString) {
 		var connection = client.voice.connections.get(message.guild.id);

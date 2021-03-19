@@ -4,8 +4,9 @@ module.exports = {
 	arguments: 'None',
 	voiceReq: false,
 	async execute(message, client, argsString) {
-		if (client.voice.connections.get(message.guild.id)) {
-			dispatcher.destroy();
+		var connection = client.voice.connections.get(message.guild.id);
+		if (connection.player.dispatcher) {
+			connection.player.dispatcher.destroy();
 		} else {
 			// Do nothing
 		}

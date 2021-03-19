@@ -5,6 +5,7 @@ module.exports = {
 	description: 'Make LCARS play audio from a YouTube video.',
 	syntax: '!play {URL} [-v XX | -vol XX]',
 	arguments: {'-v': 'Volume (0-10)'},
+	cooldown: 5,
 	voiceReq: true,
 	async execute(message, client, argsString) {
 		var connection = client.voice.connections.get(message.guild.id);
