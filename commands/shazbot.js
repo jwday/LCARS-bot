@@ -14,7 +14,7 @@ module.exports = {
 
 		var vol = 5;
 		var snd = "gbl.shazbot_bot.wav";
-		const soundsDir = './sounds/shazbots/';
+		const soundsDir = `${__dirname}/../sounds/shazbots/`;
 
 		const args = argsString.split('-').slice(1);
 

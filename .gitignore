@@ -7,3 +7,4 @@ myconfig.json
 *.ogg
 /commands/smoke.js
 *.code-workspace
+log

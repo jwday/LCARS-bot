@@ -9,7 +9,7 @@ module.exports = {
 		if (connection) {
 			var vol = 5;
 			var snd = "gbl.bye_bot.wav";
-			const soundsDir = './sounds/leave_voice/';
+			const soundsDir = `${__dirname}/../sounds/leave_voice/`;
 
 			const args = argsString.split('-').slice(1);
 

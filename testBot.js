@@ -1,8 +1,9 @@
-const Discord = require("discord.js");
-const fs = require("fs");
-const { prefix, token } = require("./myconfig.json")
+const path = require('path');
+const Discord = require(`discord.js`);
+const fs = require(`fs`);
+const { prefix, token } = require(`${__dirname}/myconfig.json`)
 
-commandsDir = "./commands";
+const commandsDir = `${__dirname}/commands`;
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -15,7 +16,7 @@ var guild_and_channel_ids = {'The Crew': ['#music-callouts', '718907750645760030
 function setCommands() {
 	const commandFiles = fs.readdirSync(commandsDir).filter(file => file.endsWith(".js"));
 	for (const file of commandFiles) {
-		const command = require(`./commands/${file}`);
+		const command = require(`${commandsDir}/${file}`);
 
 		// set a new item in the Collection
 		// with the key as the command name and the value as the exported module
@@ -101,3 +102,22 @@ setCommands();
 client.once("ready", () => {
 	console.log("Ready!");
 });
+
+client.on("guildCreate", async guild => {
+	console.log("Joined a new guild: " + guild.name);
+
+	let channelID;
+    let channels = guild.channels.cache;
+
+    for (let key in channels) {
+        let c = channels[key];
+        if (c[1].type === "general") {
+            channelID = c[0];
+            break;
+        }
+    }
+
+    let channel = guild.channels.cache.get(guild.systemChannelID || channelID);
+	await new Promise(r => setTimeout(r, 2000)); // Sleep?
+    channel.send('Greetings. This is the Library Computer Access/Retrieval System, or **LCARS**. I can\'t actually access or retrieve much just yet, but to see what I can do, type `!help`.');
+})

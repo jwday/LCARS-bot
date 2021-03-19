@@ -13,7 +13,7 @@ module.exports = {
 
 			var vol = 5;
 			var snd = "gbl.hi_bot.wav";
-			const soundsDir = './sounds/join_voice/';
+			const soundsDir = `${__dirname}/../sounds/join_voice/`;
 
 			const args = argsString.split('-').slice(1);
 

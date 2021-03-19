@@ -14,7 +14,7 @@ module.exports = {
 
 		var vol = 5;
 		var snd = "MA2.wav";
-		const soundsDir = './sounds/';
+		const soundsDir = `${__dirname}/../sounds/`;
 
 		const args = argsString.split('-').slice(1);
 

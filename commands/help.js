@@ -15,6 +15,7 @@ module.exports = {
 				// console.log(`${element.name}: ${element.description}`);
 				newEmbed.addField(`!${element.name}`, `${element.description}`, false);
 			});
+			newEmbed.addField('Use `!help [command]` to get more information on a specific command(s).', 'Ex. `!help yardsale`, `!help yardsale rockout`.', false);
 			message.channel.send(newEmbed);
 
 		} else {
