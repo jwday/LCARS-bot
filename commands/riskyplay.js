@@ -91,7 +91,7 @@ module.exports = {
 					// },
 					{
 						name: 'Requester',
-						value: message.author.username,
+						value: message.member.displayName,
 						inline: true
 					},
 					{ 
@@ -105,7 +105,7 @@ module.exports = {
 						inline: true 
 					},
 			)
-			.addField('This was a risky play!', `${message.author.username} may have played something unexpected.`, false);
+			.addField('This was a risky play!', `${message.member.displayName} may have played something unexpected.`, false);
 			// .setImage('https://i.imgur.com/wSTFkRM.png')
 			// .setTimestamp()
 			// .setFooter('Some footer text here', 'https://i.imgur.com/wSTFkRM.png');

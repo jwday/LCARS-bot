@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const ytdl = require('ytdl-core');
 
 module.exports = {
 	name: 'play',
@@ -22,8 +23,6 @@ module.exports = {
 		}
 
 		var vol = 5;
-		const ytdl = require('ytdl-core');
-		const urlLib = require('url');
 		var songInfo = '';
 		var song = '';
 		try {	
@@ -88,7 +87,7 @@ module.exports = {
 				// },
 				{
 					name: 'Requester',
-					value: message.author.username,
+					value: message.member.displayName,
 					inline: true
 				},
 				{ 
