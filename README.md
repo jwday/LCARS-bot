@@ -1,4 +1,4 @@
-# LCARS-bot
+# LCARS: A Star Trek-Inspired Discord Bot
 My very own Discord bot written in javaScript and using discord.js API.
 Currently just does a few meaningless actions as I learn how to build functionality.
 Structure is being designed such that new commands can be added as their own .js file in the *commands* directory for organization and reduced clutter.
