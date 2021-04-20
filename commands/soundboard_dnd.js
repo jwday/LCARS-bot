@@ -9,9 +9,9 @@ Canvas.registerFont(`${__dirname}/../swiss-911-ultra-compressed-bt.ttf`, { famil
 // require('canvas-5-polyfill')
 
 module.exports = {
-	name: 'soundboard',
-	description: 'Make a sound board in the channel.',
-	syntax: '!soundboard [-v XX | -vol XX]',
+	name: 'dndsoundboard',
+	description: 'Bard sounds for D&D.',
+	syntax: '!dndsoundboard [-v XX | -vol XX]',
 	arguments: {'-v': 'Volume (0-10)'},
 	cooldown: 5,
 	voiceReq: true,
@@ -26,13 +26,13 @@ module.exports = {
 			connection = await message.member.voice.channel.join();
 		}
 		
- 		// // Delete the old soundboard, if it exists at all
-		// try {
-		// 	var oldSoundboardID = client.soundboards.get(message.guild.id);
-		// 	message.channel.messages.fetch(oldSoundboardID).then(msga => msga.delete());
-		// } catch {
-		// 	// No old soundboard to delete
-		// }
+ 		// Delete the old soundboard, if it exists at all
+		try {
+			var oldSoundboardID = client.soundboards.get(message.guild.id);
+			message.channel.messages.fetch(oldSoundboardID).then(msga => msga.delete());
+		} catch {
+			// No old soundboard to delete
+		}
 
 		// Handle arguments
 		var vol = 5;
@@ -72,84 +72,84 @@ module.exports = {
 		const randColor = colorsLCARS[Math.floor(Math.random() * colorsLCARS.length)];
 		const spiffThumb = `${__dirname}/../misc/spiffSmall.png`;
 
-		// Here we'll create an LCARS-like object to display with the embed
-		const randSelectButtonSty = new Promise((resolve, reject) => {
-			const c = Canvas.createCanvas(150, 450);
-			const ctx = c.getContext('2d');
+		// // Here we'll create an LCARS-like object to display with the embed
+		// const randSelectButtonSty = new Promise((resolve, reject) => {
+		// 	const c = Canvas.createCanvas(150, 450);
+		// 	const ctx = c.getContext('2d');
 	
-			var W = c.width;
-			var H = c.height;
-			// Slotted wide rounded circle with black text
-			function buttonSty1() {
-				console.log('style 1')
-				ctx.beginPath();
-				ctx.arc(W/2, W/2, W/2, 0, Math.PI, true);
-				ctx.lineTo(0, 0.75*W, 0);
-				ctx.lineTo(W, 0.75*W, 0);
-				ctx.lineTo(W, W/2, 0);
-				ctx.closePath();
-				ctx.fillStyle = randColor;
-				ctx.fill();
-				ctx.stroke();
+		// 	var W = c.width;
+		// 	var H = c.height;
+		// 	// Slotted wide rounded circle with black text
+		// 	function buttonSty1() {
+		// 		// console.log('style 1')
+		// 		ctx.beginPath();
+		// 		ctx.arc(W/2, W/2, W/2, 0, Math.PI, true);
+		// 		ctx.lineTo(0, 0.75*W, 0);
+		// 		ctx.lineTo(W, 0.75*W, 0);
+		// 		ctx.lineTo(W, W/2, 0);
+		// 		ctx.closePath();
+		// 		ctx.fillStyle = randColor;
+		// 		ctx.fill();
+		// 		ctx.stroke();
 				
-				ctx.beginPath();
-				ctx.moveTo(0, 1.125*W);
-				ctx.lineTo(0, H-W/2);
-				ctx.arc(W/2, H-W/2, W/2, Math.PI, 0, true);
-				ctx.lineTo(W, 1.125*W);
-				ctx.closePath();
-				ctx.fillStyle = randColor;
-				ctx.fill();
-				ctx.stroke();
-				ctx.save();
+		// 		ctx.beginPath();
+		// 		ctx.moveTo(0, 1.125*W);
+		// 		ctx.lineTo(0, H-W/2);
+		// 		ctx.arc(W/2, H-W/2, W/2, Math.PI, 0, true);
+		// 		ctx.lineTo(W, 1.125*W);
+		// 		ctx.closePath();
+		// 		ctx.fillStyle = randColor;
+		// 		ctx.fill();
+		// 		ctx.stroke();
+		// 		ctx.save();
 				
-				ctx.rotate(90*Math.PI/180);
-				ctx.textAlign = 'center';
-				ctx.fillStyle = 'black';
-				ctx.font = `${W}px Swiss911`;
-				ctx.fillText(`SB${message.id.slice(-2)}`, 65*H/100, -W/8);
-			}
+		// 		ctx.rotate(90*Math.PI/180);
+		// 		ctx.textAlign = 'center';
+		// 		ctx.fillStyle = 'black';
+		// 		ctx.font = `${W}px Swiss911`;
+		// 		ctx.fillText(`SB${message.id.slice(-2)}`, 65*H/100, -W/8);
+		// 	}
 	
-			// Wide-slotted rounded circle surrounding colored text
-			function buttonSty2() {
-				console.log('style 2')
-				ctx.beginPath();
-				ctx.arc(W/2, W/2, W/2, 0, Math.PI, true);
-				ctx.lineTo(0, 0.55*W, 0);
-				ctx.lineTo(W, 0.55*W, 0);
-				ctx.lineTo(W, W/2, 0);
-				ctx.closePath();
-				ctx.fillStyle = randColor;
-				ctx.fill();
-				ctx.stroke();
+		// 	// Wide-slotted rounded circle surrounding colored text
+		// 	function buttonSty2() {
+		// 		// console.log('style 2')
+		// 		ctx.beginPath();
+		// 		ctx.arc(W/2, W/2, W/2, 0, Math.PI, true);
+		// 		ctx.lineTo(0, 0.55*W, 0);
+		// 		ctx.lineTo(W, 0.55*W, 0);
+		// 		ctx.lineTo(W, W/2, 0);
+		// 		ctx.closePath();
+		// 		ctx.fillStyle = randColor;
+		// 		ctx.fill();
+		// 		ctx.stroke();
 				
-				ctx.beginPath();
-				ctx.moveTo(0, H-0.55*W);
-				ctx.lineTo(0, H-W/2);
-				ctx.arc(W/2, H-W/2, W/2, Math.PI, 0, true);
-				ctx.lineTo(W, H-0.55*W);
-				ctx.closePath();
-				ctx.fillStyle = randColor;
-				ctx.fill();
-				ctx.stroke();
-				ctx.save();
+		// 		ctx.beginPath();
+		// 		ctx.moveTo(0, H-0.55*W);
+		// 		ctx.lineTo(0, H-W/2);
+		// 		ctx.arc(W/2, H-W/2, W/2, Math.PI, 0, true);
+		// 		ctx.lineTo(W, H-0.55*W);
+		// 		ctx.closePath();
+		// 		ctx.fillStyle = randColor;
+		// 		ctx.fill();
+		// 		ctx.stroke();
+		// 		ctx.save();
 				
-				ctx.rotate(90*Math.PI/180);
-				ctx.textAlign = 'center';
-				ctx.fillStyle = '#FFCC99';
-				ctx.font = `${1.2*W}px Swiss911`;
-				ctx.fillText(`SB${message.id.slice(-2)}`, 50*H/100, -W/15);
-			}
-			const buttonStys = [buttonSty2, buttonSty1]
-			const randNum = Math.random()
-			const select = Math.floor(randNum * buttonStys.length)
-			buttonStys[select]();
-			resolve(c);
-		});
+		// 		ctx.rotate(90*Math.PI/180);
+		// 		ctx.textAlign = 'center';
+		// 		ctx.fillStyle = '#FFCC99';
+		// 		ctx.font = `${1.2*W}px Swiss911`;
+		// 		ctx.fillText(`SB${message.id.slice(-2)}`, 50*H/100, -W/15);
+		// 	}
+		// 	const buttonStys = [buttonSty2, buttonSty1]
+		// 	const randNum = Math.random()
+		// 	const select = Math.floor(randNum * buttonStys.length)
+		// 	buttonStys[select]();
+		// 	resolve(c);
+		// });
 
-		var attachment;
-		await randSelectButtonSty
-		.then(c => attachment = new Discord.MessageAttachment(c.toBuffer(), 'LCARS_thumb.png'));
+		const attachment = `${__dirname}/../misc/dnd.png`;
+		// await randSelectButtonSty
+		// .then(c => attachment = new Discord.MessageAttachment(c.toBuffer(), 'LCARS_thumb.png'));
 
 		const randSideColor = colorsLCARS[Math.floor(Math.random() * colorsLCARS.length)];
 
@@ -158,34 +158,34 @@ module.exports = {
 			.attachFiles([attachment])
 			// .attachFiles([spiffThumb])
 			// .setAuthor('A Discord Sound Board', 'attachment://LCARS_thumb.png')
-			.setTitle(`LCARS SOUND BOARD ${message.id.slice(-4)}`)
+			.setTitle(`BARD SOUNDS`)
 			// .setImage('attachment://LCARS_thumb.png')
-			.setThumbnail('attachment://LCARS_thumb.png')
+			.setThumbnail('attachment://dnd.png')
 			.setDescription(`React with one of the emoji to play a pre-programmed sound. Note there's about a 1/2-second delay.\n**Volume:** ${vol}/10`)
 			// .setURL(song.url)
 			.addFields(
 				{
-					name: 'Shazbot',
+					name: 'Bagpipes',
 					value: ':poop:',
 					inline: true
 				},
 				{ 
-					name: 'Yard Sale', 
+					name: 'Banjo', 
 					value: ':triangular_flag_on_post:',
 					inline: true 
 				},
 				{ 
-					name: 'Rock Out', 
+					name: 'Bassoon', 
 					value: ':boom:',
 					inline: true 
 				},
 				{ 
-					name: 'Hail Them', 
+					name: 'Bongos', 
 					value: '<:startrek:823644985173737552>',
 					inline: true 
 				},
 				{ 
-					name: 'John Cena', 
+					name: 'Bass', 
 					value: ':men_wrestling:',
 					inline: true 
 				},
@@ -216,11 +216,11 @@ module.exports = {
 		var reaction = '';
 		var user = '';
 		
-		var soundFiles_shazbot = fs.readdirSync(soundsDir+'shazbots/', (err, files) => {
-			files.forEach(file => {
-				soundFiles_shazbot.push(file);
-			});
-		});
+		// var soundFiles_bardmusic = fs.readdirSync(soundsDir+'bard_music/', (err, files) => {
+		// 	files.forEach(file => {
+		// 		soundFiles_bardmusic.push(file);
+		// 	});
+		// });
 
 		var soundFiles_greet = fs.readdirSync(soundsDir+'join_voice/', (err, files) => {
 			files.forEach(file => {
@@ -266,15 +266,15 @@ module.exports = {
 					// return console.error('A user tried to use the soundboard but wasn\'t in the correct voice channel')
 				} else {
 					if (reaction._emoji.name === '💩') {
-						var snd = 'shazbots/' + soundFiles_shazbot[Math.floor(Math.random() * soundFiles_shazbot.length)];
+						var snd = 'bard_music/bagpipes1.ogg';
 					} else if (reaction._emoji.name === '🚩') {
-						var snd = "yardsale.WAV";
+						var snd = 'bard_music/banjo1.ogg';
 					} else if (reaction._emoji.name === '💥') {
-						var snd = "MA2.wav";
+						var snd = 'bard_music/bassoon1.ogg';
 					} else if (reaction._emoji.name === 'startrek') {
-						var snd = "TNGhail.ogg";
+						var snd = 'bard_music/bongos1.ogg';
 					} else if (reaction._emoji.name === '🤼‍♂️') {
-						var snd = "johncena.ogg";
+						var snd = 'bard_music/doublebass1.ogg';
 					} else if (reaction._emoji.name === '👋') {
 						var snd = 'join_voice/' + soundFiles_greet[Math.floor(Math.random() * soundFiles_greet.length)];
 					} else {
@@ -293,6 +293,7 @@ module.exports = {
 		}
 
 		// Only set up one listener. This could potentially interfere with other listeners down the road.
+		// Sure does. Now that I have two soundboards (one reg, one D&D), the listener doesn't get replaced so it continues to play the old sounds
 		if (!client._events.messageReactionAdd) {
 			client.on('messageReactionAdd', msgReactListener);
 		}

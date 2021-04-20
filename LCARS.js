@@ -127,25 +127,25 @@ client.on('message', async (message) => {
 });
 
 // Auto-greet on channel join
-// client.on('voiceStateUpdate', async (oldState, newState) => {
-// 	let newChannel = newState.channelID;
-// 	let oldChannel = oldState.channelID;
-// 	// console.log(oldState.guild.id);
+client.on('voiceStateUpdate', async (oldState, newState) => {
+	let newChannel = newState.channelID;
+	let oldChannel = oldState.channelID;
+	// console.log(oldState.guild.id);
 
 	
-// 	if (!oldState.member.user.bot && client.voice.connections.get(oldState.guild.id)) { // check if the bot is the one joining/leaving
-// 		const message = {guild: {id: oldState.guild.id}, member: {voice: ''}};
-// 		const argsString = '';
+	if (!oldState.member.user.bot && client.voice.connections.get(oldState.guild.id)) { // check if the bot is the one joining/leaving
+		const message = {guild: {id: oldState.guild.id}, member: {voice: ''}};
+		const argsString = '';
 	
-// 		if (oldChannel === null && newChannel !== null) {
-// 			await new Promise(r => setTimeout(r, 750)); // Sleep?
-// 			await doCommand('greet', message, client, argsString);
-// 		} else if (newChannel === null) {
-// 			await new Promise(r => setTimeout(r, 500)); // Sleep?
-// 			await doCommand('farewell', message, client, argsString);
-// 		}
-// 	}
-// })
+		if (oldChannel === null && newChannel !== null) {
+			await new Promise(r => setTimeout(r, 750)); // Sleep?
+			await doCommand('greet', message, client, argsString);
+		} else if (newChannel === null) {
+			await new Promise(r => setTimeout(r, 500)); // Sleep?
+			await doCommand('farewell', message, client, argsString);
+		}
+	}
+})
 
 client.login(token);
 setCommands();
