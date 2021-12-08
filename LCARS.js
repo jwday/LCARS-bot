@@ -13,6 +13,7 @@ const { cooldowns } = client;
 
 var guild_and_channel_ids = {'The Crew': ['#music-callouts', '718907750645760030'],
 'LCARS Test Server': ['#general', '820583136928727041'],
+'Goatsuckers, or whatever': ['#general', '691111987282706485'],
 'D&D': ['#general', '813245474605760523']};
 
 // Build and set all bot commands by looping through all the command files in the commands directory
