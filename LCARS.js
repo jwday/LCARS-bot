@@ -56,23 +56,51 @@ async function doCommand(command, message, client, argsString) {
 // Command handler
 client.on('message', async (message) => {
 	// Check if the message was intended as a command and if it was issued from the listed valid channel
-	if (!message.content.startsWith(prefix) || message.author.bot) {
-		return;
+	message.content = message.content.toLowerCase();
+	if (!(message.content.startsWith(prefix) || message.content.toLowerCase().startsWith("lcars") || message.content.toLowerCase().startsWith("hey lcars") || message.content.toLowerCase().startsWith("hi lcars")) || message.author.bot) {
+		console.log("Got a message, but it doesn't start with ! or LCARS but it may have come from me");
+		if (message.content.includes("tribes") && !message.author.bot) {
+			return message.channel.send(`TRIIIIEEEEEBES`);
+		} else {
+			console.log("Doesn't contain TRIEEEEBES either");
+			return;
+		}
 	} else if (!Object.values(guild_and_channel_ids).flat().includes(message.channel.id)) {
-		message.delete();
-		var allowedChannel = guild_and_channel_ids[message.guild.name][0];
-		return message.channel.send(`LCARS requires user to issue commands from **${allowedChannel}**`);
+		if (message.content.includes("tribes")) {
+			// Pass?
+		} else {
+			message.delete();
+			var allowedChannel = guild_and_channel_ids[message.guild.name][0];
+			return message.channel.send(`LCARS requires user to issue commands from **${allowedChannel}**`);
+		}
 	}
 	
 	// Parse the full command and separate out the arguments
-	const fullCommand = message.content.slice(prefix.length).trim()
+	console.log("Message: " + message.content);
+	if (message.content.startsWith(prefix)) {
+		console.log("Prefix found!");
+		fullCommand = message.content.slice(prefix.length).trim()
+	} else if (message.content.startsWith("lcars ")) {
+		console.log("'lcars ' found!");
+		fullCommand = message.content.slice(6).trim();
+	} else if (message.content.startsWith("hey lcars ")) {
+		console.log("'hey lcars ' found!");
+		fullCommand = message.content.slice(10).trim();
+	} else if (message.content.startsWith("hi lcars ")) {
+		console.log("'hi lcars ' found!");
+		return message.channel.send('what?');
+	} else {
+		console.log("Nothing found");
+		return message.channel.send('sup');
+	}
 	const command = fullCommand.split(' ')[0].toLowerCase();
 	const argsString = fullCommand.split(' ').slice(1).join(' ');
-	
+	console.log(fullCommand + "  --->  " + command + "  +  " + argsString);
+
 	// Check if it's a valid command
 	if (!client.commands.has(command)) {
 		message.delete();
-		return message.channel.send('**Command not recognized.**');
+		return message.channel.send('**Command** `' + command + '` **not recognized.**');
 	} else {
 		let voiceReq = client.commands.find(element => element.name === command).voiceReq;
 		if (voiceReq && !message.member.voice.channel) {
@@ -124,7 +152,12 @@ client.on('message', async (message) => {
 	}
 	
 	// Delete the message from chat to avoid spam
-	message.delete();
+	if (message.content.includes("tribes")) {
+		// Pass
+	} else {
+		message.delete();
+	}
+		
 });
 
 // Auto-greet on channel join

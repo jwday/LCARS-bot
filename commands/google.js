@@ -50,23 +50,30 @@ module.exports = {
 		}
 
 		googleIt({'limit': num, 'no-display': true, 'query': searchQuery}).then(results => {
+			console.log('Results: ' + results);
 			const googleThumb = `${__dirname}/../misc/google-icon-thumb-sm.png`;
 			const colors = ['#4285f4', '#ea4335', '#fbbc05', '#34a853'];
 
-			for (i=0; i < results.length; i++) {
-				const randColor = colors[Math.floor(Math.random() * colors.length)];
-	
-				const newEmbed = new Discord.MessageEmbed()
-					.attachFiles([googleThumb])
-					.setColor(randColor)
-					// .setThumbnail('attachment://google-icon-thumb-sm.png')
-					.setAuthor(`Google-It`, 'attachment://google-icon-thumb-sm.png', 'https://www.npmjs.com/package/google-it')
-					// .setAuthor(`${results[0].title}`, 'attachment://google-icon-thumb.png', `${results[0].link}`)
-					.setTitle(`${results[i].title}`)
-					.setURL(`${results[i].link}`)
-					.setDescription(`${results[i].snippet}`,false)
-	
-				message.channel.send(newEmbed);
+			try {
+				for (i=0; i < results.length; i++) {
+					const randColor = colors[Math.floor(Math.random() * colors.length)];
+		
+					const newEmbed = new Discord.MessageEmbed()
+						.attachFiles([googleThumb])
+						.setColor(randColor)
+						// .setThumbnail('attachment://google-icon-thumb-sm.png')
+						.setAuthor(`Google-It`, 'attachment://google-icon-thumb-sm.png', 'https://www.npmjs.com/package/google-it')
+						// .setAuthor(`${results[0].title}`, 'attachment://google-icon-thumb.png', `${results[0].link}`)
+						.setTitle(`${results[i].title}`)
+						.setURL(`${results[i].link}`)
+						.setDescription(`${results[i].snippet}`,false)
+		
+					message.channel.send(newEmbed);
+				}
+			} catch(error) {
+				console.error(error);
+				message.reply('Error executing command. No results found?');
+				return;
 			}
 
 		}).catch(e => {

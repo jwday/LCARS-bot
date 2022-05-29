@@ -185,6 +185,16 @@ module.exports = {
 					inline: true 
 				},
 				{ 
+					name: 'Tribes!', 
+					value: ':guitar:',
+					inline: true 
+				},
+				{ 
+					name: 'Tryeeebes', 
+					value: ':banjo:',
+					inline: true 
+				},
+				{ 
 					name: 'John Cena', 
 					value: ':men_wrestling:',
 					inline: true 
@@ -192,6 +202,36 @@ module.exports = {
 				{
 					name: 'Greet', 
 					value: ':wave:',
+					inline: true 
+				},
+				{
+					name: 'YW', 
+					value: ':robot:',
+					inline: true 
+				},
+				{
+					name: 'Psycho', 
+					value: ':zany_face:',
+					inline: true 
+				},
+				{
+					name: 'Pipe', 
+					value: '<:ezmoney:979201435520610384>',
+					inline: true 
+				},
+				{
+					name: 'Vote Init', 
+					value: ':ballot_box:',
+					inline: true 
+				},
+				{
+					name: 'Vote Passes', 
+					value: ':white_check_mark:',
+					inline: true 
+				},
+				{
+					name: 'Vote Fails', 
+					value: ':x:',
 					inline: true 
 				}
 			);
@@ -205,8 +245,16 @@ module.exports = {
 			.then(() => soundboardMsg.react('🚩'))
 			.then(() => soundboardMsg.react('💥'))
 			.then(() => soundboardMsg.react('<:startrek:823644985173737552>'))
+			.then(() => soundboardMsg.react('🎸'))
+			.then(() => soundboardMsg.react('🪕'))
 			.then(() => soundboardMsg.react('🤼‍♂️'))
 			.then(() => soundboardMsg.react('👋'))
+			.then(() => soundboardMsg.react('🤖'))
+			.then(() => soundboardMsg.react('🤪'))
+			.then(() => soundboardMsg.react('<:ezmoney:979201435520610384>'))
+			.then(() => soundboardMsg.react('🗳️'))
+			.then(() => soundboardMsg.react('✅'))
+			.then(() => soundboardMsg.react('❌'))
 			.then(client.soundboards.set(message.guild.id, soundboardMsg.id)) // Key the soundboard message ID to the Guild ID
 		  
 		// Keys must be unique in javascript, so this is a good way (i think) to keep track of the message which
@@ -225,6 +273,12 @@ module.exports = {
 		var soundFiles_greet = fs.readdirSync(soundsDir+'join_voice/', (err, files) => {
 			files.forEach(file => {
 				soundFiles_greet.push(file);
+			});
+		});
+
+		var soundFiles_pipe = fs.readdirSync(soundsDir+'pipe/', (err, files) => {
+			files.forEach(file => {
+				soundFiles_pipe.push(file);
 			});
 		});
 		
@@ -271,12 +325,29 @@ module.exports = {
 						var snd = "yardsale.WAV";
 					} else if (reaction._emoji.name === '💥') {
 						var snd = "MA2.wav";
+					} else if (reaction._emoji.name === '🎸') {
+						var snd = "crue1.ogg";
+					} else if (reaction._emoji.name === '🪕') {
+						var snd = "crue2.ogg";
 					} else if (reaction._emoji.name === 'startrek') {
 						var snd = "TNGhail.ogg";
 					} else if (reaction._emoji.name === '🤼‍♂️') {
 						var snd = "johncena.ogg";
 					} else if (reaction._emoji.name === '👋') {
 						var snd = 'join_voice/' + soundFiles_greet[Math.floor(Math.random() * soundFiles_greet.length)];
+					} else if (reaction._emoji.name === '🤖') {
+						var snd = "yw_bot.ogg";
+					} else if (reaction._emoji.name === '🤪') {
+						var snd = "obnoxious.mp3";
+					} else if (reaction._emoji.name === 'ezmoney') {
+						// var snd = 'pipe/' + soundFiles_pipe[Math.floor(Math.random() * soundFiles_pipe.length)];
+						var snd = "pipe/pipe1.ogg";
+					} else if (reaction._emoji.name === '🗳️') {
+						var snd = "vote_init.ogg";
+					} else if (reaction._emoji.name === '✅') {
+						var snd = "vote_passes.ogg";
+					} else if (reaction._emoji.name === '❌') {
+						var snd = "vote_fails.ogg";
 					} else {
 						return;
 					}

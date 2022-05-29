@@ -240,7 +240,7 @@ module.exports = {
 			if (reaction.me) {
 				// Prevents bot from calling sounds while adding reacts to message
 				return;
-			} else if (!(reaction.message.id === client.soundboards.get(reaction.message.guild.id))) {
+			} else if (!(reaction.message.id === client.soundboards.get(guildId))) {
 				// If the message that was reacted to is not the message ID stored in client.soundboards
 				return;
 			} else if (!userChannelID) {
