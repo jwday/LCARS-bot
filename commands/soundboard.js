@@ -1,371 +1,154 @@
-const fs = require(`fs`);
-const Discord = require("discord.js");
-// const { registerFont, Canvas } = require('canvas');
-const path = require('path');
-const Canvas = require('canvas');
-// const registerFront = require('canvas');
-Canvas.registerFont(`${__dirname}/../swiss-911-ultra-compressed-bt.ttf`, { family: 'Swiss911' });
-
-// require('canvas-5-polyfill')
+const { createReadStream } = require('node:fs');
+const { SlashCommandBuilder, AttachmentBuilder, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, StreamType } = require('@discordjs/voice');
+const { OpusEncoder } = require('@discordjs/opus');
+const generateButton = require('../misc/LCARSbuttongenerator');
 
 module.exports = {
-	name: 'soundboard',
-	description: 'Make a sound board in the channel.',
-	syntax: '!soundboard [-v XX | -vol XX]',
-	arguments: {'-v': 'Volume (0-10)'},
-	cooldown: 5,
-	voiceReq: true,
-	async execute(message, client, argsString) {
-		// get guild from message?
-		// how do you make different client.on events for different guilds?
-		// Right now, client.on makes an event for all guilds...at least when it comes to reacts
-		var connection = client.voice.connections.get(message.guild.id);
-		if (connection) {
-			// Do nothing
-		} else {
-			connection = await message.member.voice.channel.join();
+    data: new SlashCommandBuilder()
+        .setName('soundboard')
+        // type: 1,
+        .setDescription('Make a sound board in the channel.')
+		.addStringOption(option =>
+			option.setName('volume')
+                // type: 4,
+                .setDescription('Volume (0-10)')
+                .setRequired(false)),
+        // syntax: '!soundboard [-v XX | -vol XX]',
+        // arguments: {'-v': 'Volume (0-10)'},
+        // cooldown: 5,
+        // voiceReq: true,
+	async execute(interaction) {
+        // Check if the user is in a voice channel
+		const  voiceChannel  = interaction.member.voice.channel;
+		if (!voiceChannel) {
+            return interaction.reply({ content: 'You need to be in a voice channel to use this command!', ephemeral: true });
 		}
-		
- 		// Delete the old soundboard, if it exists at all
-		try {
-			var oldSoundboardID = client.soundboards.get(message.guild.id);
-			message.channel.messages.fetch(oldSoundboardID).then(msga => msga.delete());
-		} catch {
-			// No old soundboard to delete
-		}
+
+		// Join the voice channel
+		const connection = joinVoiceChannel({
+			channelId: voiceChannel.id,
+			guildId: interaction.guild.id,
+			adapterCreator: interaction.guild.voiceAdapterCreator,
+			selfDeaf: false, // Bot joins deafened
+			selfMute: false  // Bot joins muted
+		});
 
 		// Handle arguments
-		var vol = 5;
-		const soundsDir = `${__dirname}/../sounds/`;
-		const args = argsString.split('-').slice(1);
-
-		if (args.length) {
-			args.forEach(arg => {
-				arg = Array.from(arg.trim().split(' ')); // Multi-input arguments are split into array elements for easy access
-				
-				// Check the first element of the arg array to see what the argument is
-				if (arg[0] == 'v' || arg[0] == 'vol') {
-					// Some arguments may have additional parameters which will be stored as further array elements
-					volCheck = parseFloat(arg[1]);
-					if (isNaN(volCheck)) {
-						message.channel.send('The volume option requires a valid number to be supplied.');
-					} else if (volCheck < 0 || volCheck > 10) {
-						message.channel.send('The volume option requires a value between 0 and 10.');
-					} else {
-						vol = volCheck;
-					}
-
-				} else {
-					message.channel.send(`Argument -${arg[0]} is invalid.`);
-				}
-			});
-
-		} else {
-			// Default behavior
-		}
-
+		const vol = interaction.options.getString('volume') ?? 5;
 
 		// Create the "soundboard", which is going to be an embed object with emoji reacts applied to it.
 		// LCARS will register a user emoji react, play the appropriate sound, then return it to a count of 1.
 		// Ideally would prefer to use some sort of "set react count" rather than "remove one react" function.
-		const colorsLCARS = ['#FFCC99', '#CC99CC', '#9999CC']
-		const randColor = colorsLCARS[Math.floor(Math.random() * colorsLCARS.length)];
-		const spiffThumb = `${__dirname}/../misc/spiffSmall.png`;
+		const colorsLCARS = ['#FFCC99', '#CC99CC', '#9999CC'];
+        randIdx = Math.floor(Math.random() * colorsLCARS.length)
+        const randColor = colorsLCARS[randIdx];
 
-		// Here we'll create an LCARS-like object to display with the embed
-		const randSelectButtonSty = new Promise((resolve, reject) => {
-			const c = Canvas.createCanvas(150, 450);
-			const ctx = c.getContext('2d');
-	
-			var W = c.width;
-			var H = c.height;
-			// Slotted wide rounded circle with black text
-			function buttonSty1() {
-				// console.log('style 1')
-				ctx.beginPath();
-				ctx.arc(W/2, W/2, W/2, 0, Math.PI, true);
-				ctx.lineTo(0, 0.75*W, 0);
-				ctx.lineTo(W, 0.75*W, 0);
-				ctx.lineTo(W, W/2, 0);
-				ctx.closePath();
-				ctx.fillStyle = randColor;
-				ctx.fill();
-				ctx.stroke();
-				
-				ctx.beginPath();
-				ctx.moveTo(0, 1.125*W);
-				ctx.lineTo(0, H-W/2);
-				ctx.arc(W/2, H-W/2, W/2, Math.PI, 0, true);
-				ctx.lineTo(W, 1.125*W);
-				ctx.closePath();
-				ctx.fillStyle = randColor;
-				ctx.fill();
-				ctx.stroke();
-				ctx.save();
-				
-				ctx.rotate(90*Math.PI/180);
-				ctx.textAlign = 'center';
-				ctx.fillStyle = 'black';
-				ctx.font = `${W}px Swiss911`;
-				ctx.fillText(`SB${message.id.slice(-2)}`, 65*H/100, -W/8);
-			}
-	
-			// Wide-slotted rounded circle surrounding colored text
-			function buttonSty2() {
-				// console.log('style 2')
-				ctx.beginPath();
-				ctx.arc(W/2, W/2, W/2, 0, Math.PI, true);
-				ctx.lineTo(0, 0.55*W, 0);
-				ctx.lineTo(W, 0.55*W, 0);
-				ctx.lineTo(W, W/2, 0);
-				ctx.closePath();
-				ctx.fillStyle = randColor;
-				ctx.fill();
-				ctx.stroke();
-				
-				ctx.beginPath();
-				ctx.moveTo(0, H-0.55*W);
-				ctx.lineTo(0, H-W/2);
-				ctx.arc(W/2, H-W/2, W/2, Math.PI, 0, true);
-				ctx.lineTo(W, H-0.55*W);
-				ctx.closePath();
-				ctx.fillStyle = randColor;
-				ctx.fill();
-				ctx.stroke();
-				ctx.save();
-				
-				ctx.rotate(90*Math.PI/180);
-				ctx.textAlign = 'center';
-				ctx.fillStyle = '#FFCC99';
-				ctx.font = `${1.2*W}px Swiss911`;
-				ctx.fillText(`SB${message.id.slice(-2)}`, 50*H/100, -W/15);
-			}
-			const buttonStys = [buttonSty2, buttonSty1]
-			const randNum = Math.random()
-			const select = Math.floor(randNum * buttonStys.length)
-			buttonStys[select]();
-			resolve(c);
-		});
-
-		var attachment;
-		await randSelectButtonSty
-		.then(c => attachment = new Discord.MessageAttachment(c.toBuffer(), 'LCARS_thumb.png'));
-
-		const randSideColor = colorsLCARS[Math.floor(Math.random() * colorsLCARS.length)];
-
-		const newEmbed = new Discord.MessageEmbed()
-			.setColor(randSideColor)
-			.attachFiles([attachment])
-			// .attachFiles([spiffThumb])
-			// .setAuthor('A Discord Sound Board', 'attachment://LCARS_thumb.png')
-			.setTitle(`LCARS SOUND BOARD ${message.id.slice(-4)}`)
-			// .setImage('attachment://LCARS_thumb.png')
-			.setThumbnail('attachment://LCARS_thumb.png')
+        // List of emojis to react with
+        const buttonList = [
+			{ title: 'Hail',	 		file: 'TNGhail.ogg', 		emoji: '📞'},
+			{ title: 'Yardsale', 		file: 'yardsale.WAV', 		emoji: '🚩'}, 
+            { title: 'YW',	 			file: 'vote_init.ogg', 		emoji: '🗳️'}, 
+            { title: 'Vote Pass', 		file: 'vote_passes.ogg', 	emoji: '✅'}, 
+            { title: 'Vote Fail', 		file: 'vote_fails.ogg', 	emoji: '❌'}, 
+            { title: 'Tribes!', 		file: 'crue1.ogg', 			emoji: '🎸'}, 
+            { title: 'Trieebs', 		file: 'crue2.ogg', 			emoji: '🥁'}, 
+            { title: 'Heist', 			file: 'heist.ogg', 			emoji: '💰'}, 
+            { title: 'I\'m Out', 		file: 'leaving.mp3', 		emoji: '📤'},  
+            { title: 'Weed', 			file: 'smoke.mp3', 			emoji: '🚬'},  
+            { title: 'John Cena', 		file: 'johncena.ogg', 		emoji: '💪'}, 
+            { title: 'Boom', 			file: 'MA2.ogg', 			emoji: '💥'},  
+        ];
+		          
+		// Create an LCARS-like image to display with the embed
+		// Check if a soundboard message has already been created in the past (based on msgID)
+		// messageID = interaction.id;
+		// if(soundboardID) {
+		// 	interaction.client.guilds.get('guildID')
+		// 		.channels.get('channelID')
+		// 		.fetchMessage(soundboardID)
+		// 		.then(message => message.delete());
+		// } else {
+		// 	var soundboardID = messageID
+		// }
+		const image = await generateButton(messageID);
+        const LCARSimage = new AttachmentBuilder(image, { name: 'LCARS_button.png' });        
+		const soundboardEmbed = new EmbedBuilder()
+			.setColor(randColor)
+			.setTitle(`LCARS SOUNDBOARD ${messageID.slice(-4)}`)
+			.setThumbnail('attachment://LCARS_button.png')
 			.setDescription(`React with one of the emoji to play a pre-programmed sound. Note there's about a 1/2-second delay.\n**Volume:** ${vol}/10`)
+			// .attachFiles([LCARSimage])
+			// .attachFiles([spiffThumb])
+			// .setAuthor('A Discord Sound Board', 'attachment://LCARS_button.png')
+			// .setImage('attachment://LCARS_button.png')
 			// .setURL(song.url)
-			.addFields(
-				{
-					name: 'Shazbot',
-					value: ':poop:',
-					inline: true
-				},
-				{ 
-					name: 'Yard Sale', 
-					value: ':triangular_flag_on_post:',
-					inline: true 
-				},
-				{ 
-					name: 'Rock Out', 
-					value: ':boom:',
-					inline: true 
-				},
-				{ 
-					name: 'Hail Them', 
-					value: '<:startrek:823644985173737552>',
-					inline: true 
-				},
-				{ 
-					name: 'Tribes!', 
-					value: ':guitar:',
-					inline: true 
-				},
-				{ 
-					name: 'Tryeeebes', 
-					value: ':banjo:',
-					inline: true 
-				},
-				{ 
-					name: 'John Cena', 
-					value: ':men_wrestling:',
-					inline: true 
-				},
-				{
-					name: 'Greet', 
-					value: ':wave:',
-					inline: true 
-				},
-				{
-					name: 'YW', 
-					value: ':robot:',
-					inline: true 
-				},
-				{
-					name: 'Psycho', 
-					value: ':zany_face:',
-					inline: true 
-				},
-				{
-					name: 'Pipe', 
-					value: '<:ezmoney:979201435520610384>',
-					inline: true 
-				},
-				{
-					name: 'Vote Init', 
-					value: ':ballot_box:',
-					inline: true 
-				},
-				{
-					name: 'Vote Passes', 
-					value: ':white_check_mark:',
-					inline: true 
-				},
-				{
-					name: 'Vote Fails', 
-					value: ':x:',
-					inline: true 
-				}
-			);
-		// .addField('Inline field title', 'Some value here', true)
-		// .setImage('https://i.imgur.com/wSTFkRM.png')
-		// .setTimestamp()
-		// .setFooter('Some footer text here', 'https://i.imgur.com/wSTFkRM.png');
-
-		const soundboardMsg = await message.channel.send(newEmbed);
-		await soundboardMsg.react('💩')
-			.then(() => soundboardMsg.react('🚩'))
-			.then(() => soundboardMsg.react('💥'))
-			.then(() => soundboardMsg.react('<:startrek:823644985173737552>'))
-			.then(() => soundboardMsg.react('🎸'))
-			.then(() => soundboardMsg.react('🪕'))
-			.then(() => soundboardMsg.react('🤼‍♂️'))
-			.then(() => soundboardMsg.react('👋'))
-			.then(() => soundboardMsg.react('🤖'))
-			.then(() => soundboardMsg.react('🤪'))
-			.then(() => soundboardMsg.react('<:ezmoney:979201435520610384>'))
-			.then(() => soundboardMsg.react('🗳️'))
-			.then(() => soundboardMsg.react('✅'))
-			.then(() => soundboardMsg.react('❌'))
-			.then(client.soundboards.set(message.guild.id, soundboardMsg.id)) // Key the soundboard message ID to the Guild ID
-		  
-		// Keys must be unique in javascript, so this is a good way (i think) to keep track of the message which
-		// corresponds to the soundboard in each guild, and it means each guild will only be able to have one
-		// message acting as a soundboard (code checks this condition below)
-
-		var reaction = '';
-		var user = '';
 		
-		var soundFiles_shazbot = fs.readdirSync(soundsDir+'shazbots/', (err, files) => {
-			files.forEach(file => {
-				soundFiles_shazbot.push(file);
-			});
-		});
+        // Create buttons for different actions			
+		let rowComponents = []
+		let singleRow = new ActionRowBuilder() 
+		let allRows = []
 
-		var soundFiles_greet = fs.readdirSync(soundsDir+'join_voice/', (err, files) => {
-			files.forEach(file => {
-				soundFiles_greet.push(file);
-			});
-		});
+		buttonList.forEach(({ title, emoji }) => {
+			soundboardEmbed.addFields({
+				name: title,
+				value: emoji,
+				inline: true
+			})
 
-		var soundFiles_pipe = fs.readdirSync(soundsDir+'pipe/', (err, files) => {
-			files.forEach(file => {
-				soundFiles_pipe.push(file);
-			});
-		});
-		
-		async function msgReactListener(reaction, user) {
-			// The following block checks to make sure the user who reacted is in the same voice
-			// channel as the bot by comparing the VoiceChannelID of the user and the bot based
-			// on the Guild ID of the react and the Guild ID of the user who reacted.
-			const userID = user.id;  // Return user who reacted
-			const guildID = reaction.message.guild.id;  // Return ID for guild that react occurred in
-			const guildInfo = client.guilds.cache.get(guildID); // Get info for guild that react occurred in
-			const userChannelID = guildInfo.voiceStates.cache.get(userID).channelID;  // Get channel ID for the voice channel the user is logged into
-			
-			if (reaction.me) {
-				// Prevents bot from calling sounds while adding reacts to message
-				return;
-			} else if (!(reaction.message.id === client.soundboards.get(reaction.message.guild.id))) {
-				// If the message that was reacted to is not the message ID stored in client.soundboards
-				return;
-			} else if (!userChannelID) {
-				// return console.error('A user tried to use the soundboard but wasn\'t in a voice channel')
+			const newButton = new ButtonBuilder()
+				.setCustomId(title)
+				// .setLabel('Foo')
+				.setEmoji(emoji)
+				.setStyle(ButtonStyle.Secondary)
+			if (rowComponents.length  < 5) {
+				rowComponents.push(newButton)
 			} else {
-				var clientChannelID = '';
-				try {  // Get channel ID for the voice channel the client is logged into
-					// This will fail if the client was disconnected from a voice channel prior to a react
-					clientChannelID = client.voice.connections.get(guildID).channel.id; 
-				} catch {
-					try {  // Connect to the user's voice channel
-						// This will also prevent the bot from getting pulled to whichever channel the user is in when they react.
-						// The bot will only join the user channel if it is not already connected to a channel.
-						connection = await message.member.voice.channel.join();  
-						// Now get the channel ID
-						clientChannelID = client.voice.connections.get(guildID).channel.id;
-					} catch {
-						// return console.error('Unable to connect to voice');
-					}
-				}
-
-				if (clientChannelID !== userChannelID) {  // If the user is logged into the same channel as the client
-					// return console.error('A user tried to use the soundboard but wasn\'t in the correct voice channel')
-				} else {
-					if (reaction._emoji.name === '💩') {
-						var snd = 'shazbots/' + soundFiles_shazbot[Math.floor(Math.random() * soundFiles_shazbot.length)];
-					} else if (reaction._emoji.name === '🚩') {
-						var snd = "yardsale.WAV";
-					} else if (reaction._emoji.name === '💥') {
-						var snd = "MA2.wav";
-					} else if (reaction._emoji.name === '🎸') {
-						var snd = "crue1.ogg";
-					} else if (reaction._emoji.name === '🪕') {
-						var snd = "crue2.ogg";
-					} else if (reaction._emoji.name === 'startrek') {
-						var snd = "TNGhail.ogg";
-					} else if (reaction._emoji.name === '🤼‍♂️') {
-						var snd = "johncena.ogg";
-					} else if (reaction._emoji.name === '👋') {
-						var snd = 'join_voice/' + soundFiles_greet[Math.floor(Math.random() * soundFiles_greet.length)];
-					} else if (reaction._emoji.name === '🤖') {
-						var snd = "yw_bot.ogg";
-					} else if (reaction._emoji.name === '🤪') {
-						var snd = "obnoxious.mp3";
-					} else if (reaction._emoji.name === 'ezmoney') {
-						// var snd = 'pipe/' + soundFiles_pipe[Math.floor(Math.random() * soundFiles_pipe.length)];
-						var snd = "pipe/pipe1.ogg";
-					} else if (reaction._emoji.name === '🗳️') {
-						var snd = "vote_init.ogg";
-					} else if (reaction._emoji.name === '✅') {
-						var snd = "vote_passes.ogg";
-					} else if (reaction._emoji.name === '❌') {
-						var snd = "vote_fails.ogg";
-					} else {
-						return;
-					}
-
-					const dispatcher = client.voice.connections
-						.get(reaction.message.guild.id)
-						.play(soundsDir + snd, { volume: vol/10 })
-						.on("finish", () => {
-							dispatcher.destroy();
-						})
-						.on("error", error => console.error(error));
-				}
+				singleRow.addComponents(rowComponents);
+				allRows.push(singleRow)
+				
+				singleRow = new ActionRowBuilder()
+				rowComponents = []
+				rowComponents.push(newButton)
 			}
-		}
+		});
+		singleRow.addComponents(rowComponents); // Add last single row
+		allRows.push(singleRow)
 
-		// Only set up one listener. This could potentially interfere with other listeners down the road.
-		if (!client._events.messageReactionAdd) {
-			client.on('messageReactionAdd', msgReactListener);
-		}
+        // Send the embed as a reply to the interaction
+        replyMessage = await interaction.reply({ 
+			embeds: [soundboardEmbed], 
+			components: allRows, 
+			files: [LCARSimage]
+		});
+
+
+
+		// Handle button interactions
+		const collector = replyMessage.createMessageComponentCollector({ componentType: ComponentType.Button });
+
+        collector.on('collect', async i => {
+			const reaction = buttonList.filter(d => d.title === i.customId)
+			// If reaction.length == 1 {}
+			const filename = reaction[0].file
+
+			// Create an audio resource
+			const soundsDir = `${__dirname}/../sounds/`;
+			const resource = createAudioResource(soundsDir + filename, {
+				inlineVolume: true
+			});
+			resource.volume.setVolume(vol / 10);
+			
+			// Create an audio player
+			const player = createAudioPlayer();
+
+			// Play the audio resource
+			connection.subscribe(player);
+			player.play(resource);
+
+			// Reply to the button-pusher because it requires you to, then delete
+			await i.deferReply()
+			await i.deleteReply()
+        });
 	},
 };

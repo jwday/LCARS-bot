@@ -1,71 +1,100 @@
-const fs = require(`fs`);
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, StreamType } = require('@discordjs/voice');
+const { OpusEncoder } = require('@discordjs/opus');
+const fs = require('fs');
 
 module.exports = {
-	name: 'greet',
-	description: 'Make LCARS say hello.',
-	syntax: '!greet [-v XX | -vol XX] [-r | -rand] [-c | -chat]',
-	arguments: {'-v': 'Volume (0-10)', '-r': 'Randomize voice', '-c': 'Display in chat'},
-	cooldown: 5,
-	voiceReq: true,
-	async execute(message, client, argsString) {
-		var connection = client.voice.connections.get(message.guild.id);
-		if (connection) {
-			// Do nothing
-		} else {
-			connection = await message.member.voice.channel.join();
+	data: {
+		name: 'greet',
+		type: 1,
+		description: 'Make LCARS say hello.',
+		options: [
+			{
+				name: 'volume',
+				type: 10,
+				description: 'Volume (0-10)',
+				required: false,
+				min_value: 1,
+				max_value: 10,
+			},
+			{
+				name: 'voice',
+				type: 3,
+				description: 'Which voice to use',
+				options: [
+					{
+						name: 'default',
+						type: 1,
+						description: 'The default voice',
+						required: false,
+						value: 'default',
+					},
+					{
+						name: 'random',
+						type: 1,
+						description: 'Choose a random voice',
+						required: false,
+						value: 'random',
+					},
+				]
+			}
+		]
+		// syntax: '!greet [-v XX | -vol XX] [-r | -rand] [-c | -chat]',
+		// arguments: {'-v': 'Volume (0-10)', '-r': 'Randomize voice', '-c': 'Display in chat'},
+		// cooldown: 5,
+		// voiceReq: true,
+	},
+	async execute(interaction) {
+        // Check if the user is in a voice channel
+		const voiceChannel  = interaction.member.voice.channel;
+		if (!voiceChannel) {
+            return interaction.reply({ content: 'You need to be in a voice channel to use this command!', ephemeral: true });
 		}
 
-		var vol = 5;
-		var snd = "gbl.hi_bot.wav";
-		const soundsDir = `${__dirname}/../sounds/join_voice/`;
+        // Acknowledge the interaction without sending an immediate response
+		await interaction.deferReply({ ephemeral: true });
 
-		var args = '';
-		try {
-			args = argsString.split('-').slice(1);
-		} catch {
-			
-		}
-
-		if (args.length) {
-			args.forEach(arg => {
-				arg = Array.from(arg.trim().split(' ')); // Multi-input arguments are split into array elements for easy access
-				
-				// Check the first element of the arg array to see what the argument is
-				if (arg[0] == 'r' || arg[0] == 'rand') {
-					var soundFiles = fs.readdirSync(soundsDir, (err, files) => {
-						files.forEach(file => {
-							soundFiles.push(file);
-						});
-					});
-					snd = soundFiles[Math.floor(Math.random() * soundFiles.length)];
-
-				} else if (arg[0] == 'v' || arg[0] == 'vol') {
-					// Some arguments may have additional parameters which will be stored as further array elements
-					volCheck = parseFloat(arg[1]);
-					if (isNaN(volCheck)) {
-						message.channel.send('The volume option requires a valid number to be supplied.');
-					} else if (volCheck < 0 || volCheck > 10) {
-						message.channel.send('The volume option requires a value between 0 and 10.');
-					} else {
-						vol = volCheck;
-					}
-
-				} else if (arg[0] == 'c' || arg[0] == 'chat') {
-					message.channel.send(':wave: Hi.');
-					
-				} else {
-					message.channel.send(`Argument -${arg[0]} is invalid.`);
-				}
-			});
-
-		} else {
-			// Default behavior
-		}
+        // Get the options (with default values if not provided)
+        const volume = interaction.options.getNumber('volume') ?? 5;
+        const voice = interaction.options.getString('voice') ?? 'default';
 		
-		dispatcher = connection.play(soundsDir + snd, { volume: vol/10 });
-		dispatcher.on("finish", () => {
-			dispatcher.destroy();
-		})
-		dispatcher.on("error", error => console.error(error));
+        // Join the voice channel
+        const connection = joinVoiceChannel({
+            channelId: voiceChannel.id,
+            guildId: interaction.guild.id,
+            adapterCreator: interaction.guild.voiceAdapterCreator,
+            selfDeaf: false, // Bot joins deafened
+            selfMute: false  // Bot joins muted
+        });
+		
+		// Choose a sound to play
+		const soundsDir = `${__dirname}/../sounds/join_voice/`;
+        if (voice === 'random') {
+			const soundFiles = fs.readdirSync(soundsDir);
+            const randomFile = soundFiles[Math.floor(Math.random() * soundFiles.length)];
+			var snd = randomFile;
+        } else {
+			var snd = 'gbl.hi_bot.wav';
+        }
+
+		// Create an audio player
+		const player = createAudioPlayer();
+		
+		// Create an audio resource
+        const resource = createAudioResource(soundsDir + snd, {
+			inlineVolume: true
+		});
+        resource.volume.setVolume(volume / 10);
+
+		// Play the audio resource
+        player.play(resource);
+        connection.subscribe(player);
+
+        // Disconnect from the voice channel after the audio is finished
+        // player.on(AudioPlayerStatus.Idle, () => {
+        //     connection.destroy();
+        // });	
+
+		// Reply to the button-pusher because it requires you to, then delete
+		await interaction.deleteReply()
 	},
 };
