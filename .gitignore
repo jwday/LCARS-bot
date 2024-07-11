@@ -8,3 +8,5 @@ myconfig.json
 /commands/smoke.js
 *.code-workspace
 log
+/old/*
+*.png
