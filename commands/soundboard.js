@@ -48,7 +48,7 @@ module.exports = {
         const buttonList = [
 			{ title: 'Hail',	 		file: 'TNGhail.ogg', 		emoji: '📞'},
 			{ title: 'Yardsale', 		file: 'yardsale.WAV', 		emoji: '🚩'}, 
-            { title: 'YW',	 			file: 'vote_init.ogg', 		emoji: '🗳️'}, 
+            { title: 'Vote Init',		file: 'vote_init.ogg', 		emoji: '🗳️'}, 
             { title: 'Vote Pass', 		file: 'vote_passes.ogg', 	emoji: '✅'}, 
             { title: 'Vote Fail', 		file: 'vote_fails.ogg', 	emoji: '❌'}, 
             { title: 'Tribes!', 		file: 'crue1.ogg', 			emoji: '🎸'}, 
@@ -62,7 +62,7 @@ module.exports = {
 		          
 		// Create an LCARS-like image to display with the embed
 		// Check if a soundboard message has already been created in the past (based on msgID)
-		// messageID = interaction.id;
+		messageID = interaction.id;
 		// if(soundboardID) {
 		// 	interaction.client.guilds.get('guildID')
 		// 		.channels.get('channelID')
@@ -128,6 +128,9 @@ module.exports = {
 		const collector = replyMessage.createMessageComponentCollector({ componentType: ComponentType.Button });
 
         collector.on('collect', async i => {
+			// Reply to the button-pusher because it requires you to, and because loading the sound may take longer than 3 seconds
+			await i.deferReply({ephemeral: true})
+
 			const reaction = buttonList.filter(d => d.title === i.customId)
 			// If reaction.length == 1 {}
 			const filename = reaction[0].file
@@ -146,8 +149,6 @@ module.exports = {
 			connection.subscribe(player);
 			player.play(resource);
 
-			// Reply to the button-pusher because it requires you to, then delete
-			await i.deferReply()
 			await i.deleteReply()
         });
 	},

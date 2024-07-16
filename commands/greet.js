@@ -1,6 +1,6 @@
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, StreamType } = require('@discordjs/voice');
-const { OpusEncoder } = require('@discordjs/opus');
 const fs = require('fs');
+const { playSound } = require('../utils/say.js')
 
 module.exports = {
 	data: {
@@ -44,14 +44,14 @@ module.exports = {
 		// voiceReq: true,
 	},
 	async execute(interaction) {
-        // Check if the user is in a voice channel
+		// Acknowledge the interaction without sending an immediate response
+		await interaction.deferReply({ ephemeral: true });
+
+		// Check if the user is in a voice channel
 		const voiceChannel  = interaction.member.voice.channel;
 		if (!voiceChannel) {
             return interaction.reply({ content: 'You need to be in a voice channel to use this command!', ephemeral: true });
 		}
-
-        // Acknowledge the interaction without sending an immediate response
-		await interaction.deferReply({ ephemeral: true });
 
         // Get the options (with default values if not provided)
         const volume = interaction.options.getNumber('volume') ?? 5;
@@ -67,7 +67,7 @@ module.exports = {
         });
 		
 		// Choose a sound to play
-		const soundsDir = `${__dirname}/../sounds/join_voice/`;
+		const soundsDir = `join_voice/`;
         if (voice === 'random') {
 			const soundFiles = fs.readdirSync(soundsDir);
             const randomFile = soundFiles[Math.floor(Math.random() * soundFiles.length)];
@@ -76,25 +76,10 @@ module.exports = {
 			var snd = 'gbl.hi_bot.wav';
         }
 
-		// Create an audio player
-		const player = createAudioPlayer();
-		
-		// Create an audio resource
-        const resource = createAudioResource(soundsDir + snd, {
-			inlineVolume: true
-		});
-        resource.volume.setVolume(volume / 10);
+		// Play the sound
+		playSound(connection, soundsDir+snd, volume)
 
-		// Play the audio resource
-        player.play(resource);
-        connection.subscribe(player);
-
-        // Disconnect from the voice channel after the audio is finished
-        // player.on(AudioPlayerStatus.Idle, () => {
-        //     connection.destroy();
-        // });	
-
-		// Reply to the button-pusher because it requires you to, then delete
+		// Kill the interaction
 		await interaction.deleteReply()
 	},
 };

@@ -29,7 +29,8 @@ const rest = new REST().setToken(token);
 // Grab all the command folders from the commands directory you created earlier
 const commands = [];
 const commandFiles = fs.readdirSync(`${__dirname}/commands`).filter(file => file.endsWith('.js'));
-// const commandFiles = [`tribes.js`];
+// const commandFiles = [`../utils/say.js`];
+// const commandFiles = [`stop.js`];
 
 console.log('\nCompiling commands list...')
 commandFiles.forEach(file => {
