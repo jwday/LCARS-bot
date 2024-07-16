@@ -14,7 +14,7 @@ Still in work, some code still needs generalization to make this a turn-key bot 
    |-- ytdl-core
 ```
 
-## Currently Supported Commands
+## Currently Supported Commands (OUT OF DATE AS OF 7/16/2024)
 ### General
 ---
 `!help [command]`
